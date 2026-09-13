@@ -96,7 +96,32 @@ A causa de fundo: o programa trata as "ofertas" como se fossem produtos únicos 
 A correção certa: criar um Computador novo a cada vez que uma oferta é escolhida dentro do loop, em vez de reaproveitar computador1/computador2/computador3:
 
 
-Promt 2: 
+Promt 2:
+Terminei o projeto assim. Pensando em programacao orientada a objeto e de acordo com o UML, de 0 a 10, qual nota voce daria ?
+
+Tracing the double-counting bug's effect on totals.
+Eu daria uma 7/10. A modelagem de relacionamentos está sólida e bate com o UML, mas a implementação tem alguns bugs reais que comprometem a correção do programa. Vou detalhar:
+
+O que está bem alinhado com o UML (pontos fortes):
+
+Composição (HardwareBasico, SistemaOperacional) — instanciados só dentro do Computador, nunca expostos por fora. Correto.
+Agregação (MemoriaUSB) — criado independente no Main e associado depois via addMemoriaUSB(). Correto.
+Associação simples (Cliente→Computador) — o Cliente não guarda lista, só recebe o objeto passageiramente. Correto.
+Multiplicidade 2..* — você fez um esforço real pra validar isso no fluxo (impedir sair com menos de 2 computadores). Boa iniciativa de ligar o código à regra do diagrama.
+Encapsulamento geral bom: atributos privados, sem getters/setters "vazando" tudo sem necessidade.
+Problemas que puxam a nota para baixo:
+
+Bug real — total duplicado. No final do programa, você chama cliente.CalculaTotalCompra(pcEscolhido) de novo, fora do loop:
+java
+System.out.println("Valor total a pagar: R$ " + cliente.CalculaTotalCompra(pcEscolhido));
+Só que esse método já soma o preço a cada chamada (this.totalCompra += pc.getPreco()). Isso significa que o preço do último computador escolhido é somado duas vezes no total final. É um bug que gera valor errado — o núcleo do requisito de negócio.
+
+Divergência do método com o UML. O diagrama mostra calculaTotalCompra(): float, sem parâmetro. Seu método é CalculaTotalCompra(Computador pc) — com parâmetro e com letra maiúscula no início (convenção Java é camelCase, começando minúsculo). Funcionalmente resolve o problema, mas não é fiel à assinatura do diagrama.
+Tratamento de oferta inválida incompleto. Quando o usuário digita uma oferta fora de 1/2/3 (ex: 5), o código imprime "Oferta inválida!" mas não usa continue — então ele continua a execução e adiciona pcEscolhido (o valor antigo, ou null na primeira iteração) de novo no array, incrementando a contagem indevidamente.
+Print morto/contraditório. Dentro do bloco que só roda quando qtdComputadoresAdquiridos>=2, você tem System.out.println("Nenhuma oferta foi escolhida"); — mensagem que não faz sentido ali, já que nesse ponto pelo menos 2 ofertas foram escolhidas.
+
+
+Promt 3: 
 Qual nota voce daria para esse versao do projeto ?
 
 Checking for a cancellation-order processing bug.
