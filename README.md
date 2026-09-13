@@ -1,3 +1,8 @@
+# Nome: Felipe Lamy Rosa Renno
+# Curso: Enhenharia de Software
+# Matricula: 507
+
+
 # PCMania
 
 Projeto acadêmico em Java para praticar Programação Orientada a Objetos (POO), implementado a partir de um diagrama de classes UML. Simula uma loja de computadores onde o cliente escolhe entre 3 ofertas fixas, pode adicionar memória extra e recebe um resumo da compra ao final.
@@ -55,8 +60,6 @@ java Main
 
 ## Decisões de design (perguntas resolvidas durante o desenvolvimento)
 
-- **Por que associação simples e não agregação?** Composição e agregação exigem que o "todo" guarde uma referência duradoura à "parte". Como o `Cliente` não armazena os `Computador` comprados (só processa e acumula o total), a relação é associação simples — mesmo assim, o `Cliente` pôde manter um método `calculaTotalCompra()` sem parâmetros guardando **um valor primitivo** (`float`), o que não fere a associação simples, já que não é uma referência a objeto.
-- **`addOfertas` como método estático quebraria a composição?** Não — o que define composição é *quem* cria e controla o ciclo de vida da parte, não se o método é estático ou de instância. Um método estático dentro da própria classe `Computador` continuaria sendo composição, desde que o resultado fique preso a um atributo privado da instância.
 - **Cada compra precisa de um `Computador` independente.** As 3 ofertas (`computador1`, `computador2`, `computador3`) mostradas no início servem só de vitrine. Cada vez que o cliente escolhe uma oferta dentro do loop, um `Computador` novo é instanciado com aquela configuração — evitando que a memória extra de uma compra "vaze" para outra compra da mesma oferta (bug de aliasing corrigido durante o desenvolvimento).
 
 ## Regras de negócio implementadas
@@ -64,3 +67,62 @@ java Main
 - Mínimo de 2 computadores por pedido (`2..*` do UML), com opção de cancelar a compra se o cliente desistir antes de atingir esse mínimo.
 - Memória extra é opcional e específica por compra (não compartilhada entre computadores da mesma oferta).
 - O pedido só é processado (`ProcessarPedido`) se o mínimo de 2 computadores for atingido.
+
+Utilizei a I.A para tirar uma duvida em especifico e para perguntar se o meu projeto estava de acordo com o UML. 
+Tambem utilizei I.A para criar esse ReadMe. Utilizei o Claude Sonnet 5.
+
+
+Segue os promts com os resultados:
+
+Promt 1:
+Estou com um problema no meu codigo, quando eu coloco que quero memoria a mais em uma oferta, eu nao consigo tirar essa memoria extra da oferta depois, ou seja, eu nao consigo depois de colocar a memoria extra no array de computadores, eu nao consigo escolher a mesma oferta sem memoria extra
+
+Resultado 1:
+Drafting a per-purchase object creation approach to fix the leak.
+Boa observação — isso é um bug real de aliasing (referências compartilhadas), bem diferente dos anteriores. Deixa eu explicar a causa raiz.
+
+Por que isso acontece:
+
+computador1, computador2 e computador3 são criados uma única vez, lá no início do Main, e continuam sendo os mesmos objetos durante todo o programa. Toda vez que o cliente escolhe a "oferta 1", você está pegando essa mesma referência de computador1 de novo — não uma cópia nova.
+
+Então, se o cliente:
+
+Escolhe oferta 1 → adiciona memória extra → computador1.memoriaUSB fica preenchido.
+Escolhe oferta 1 de novo, dessa vez sem memória → cai no else, que nunca reseta memoriaUSB de volta pra null.
+Resultado: o mesmo objeto computador1 continua com a memória "grudada" — e pior, como o array computadoresAdquiridos guarda referências, não cópias, a 1ª compra (que está no array) também "sente" qualquer mudança feita depois no mesmo computador1. Ou seja, mesmo resetando no else, você corrigiria só sintomaticamente e ainda bagunçaria a 1ª compra que já estava no array.
+
+A causa de fundo: o programa trata as "ofertas" como se fossem produtos únicos e reaproveitáveis, mas na prática cada compra deveria gerar um computador independente — um novo objeto, não o mesmo reaproveitado.
+
+A correção certa: criar um Computador novo a cada vez que uma oferta é escolhida dentro do loop, em vez de reaproveitar computador1/computador2/computador3:
+
+
+Promt 2: 
+Qual nota voce daria para esse versao do projeto ?
+
+Checking for a cancellation-order processing bug.
+Boa evolução! Essa versão corrigiu os bugs mais graves da anterior. Eu daria 8.5/10.
+
+O que foi corrigido (e ficou muito bom):
+
+✅ Bug da duplicação do total resolvido. Agora comprarComputador() acumula internamente e calculaTotalCompra() só retorna o valor final, chamado uma única vez no resumo. Sem soma dupla.
+✅ Assinatura bate 100% com o UML — calculaTotalCompra(): float, sem parâmetro nenhum, exatamente como no diagrama.
+✅ Oferta inválida agora tem continue — evita que um pcEscolhido antigo (ou null) seja adicionado por engano ao array.
+✅ Removeu aquele print morto ("Nenhuma oferta foi escolhida") que não fazia sentido.
+✅ A matrícula aparece certinho no resumo (+matricula).
+Um bug que sobrou:
+
+ProcessarPedido.processarPedido(...) está sendo chamado fora do if(qtdComputadoresAdquiridos>=2), ou seja, roda sempre — mesmo quando o pedido foi cancelado por ter menos de 2 computadores.
+
+Cenário que quebra: o cliente escolhe 1 computador, depois decide cancelar (continuar=0). O programa já imprime "Pedido Cancelado", mas logo depois ProcessarPedido roda mesmo assim e imprime "Pedido enviado..." para aquele computador que ficou no array — contradizendo o cancelamento que acabou de acontecer.
+
+Correção simples — mover a chamada pra dentro do bloco if:
+
+java
+if(qtdComputadoresAdquiridos>=2 ){
+    System.out.println("\n-- Resumo da compra --");
+    // ... resto do resumo ...
+    System.out.println("Valor total a pagar: R$ " + cliente.calculaTotalCompra());
+    ProcessarPedido.processarPedido(computadoresAdquiridos, qtdComputadoresAdquiridos); // <- move pra cá
+}
+Corrigindo isso, sobe fácil pra 9.5–10 — a modelagem OO e a fidelidade ao UML já estão excelentes.
+
