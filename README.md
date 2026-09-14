@@ -68,35 +68,18 @@ java Main
 - Memória extra é opcional e específica por compra (não compartilhada entre computadores da mesma oferta).
 - O pedido só é processado (`ProcessarPedido`) se o mínimo de 2 computadores for atingido.
 
+## Uso da I.A
+
 Utilizei a I.A para tirar uma duvida em especifico e para perguntar se o meu projeto estava de acordo com o UML. 
 Tambem utilizei I.A para criar esse ReadMe. Utilizei o Claude Sonnet 5.
+Achei que foi um bom resultado, a I.A conseguiu a me ajudar a ver bugs e dar dicas de como melhorar codigo de uma forma que nao estava enxergando.
 
+
+## Promts
 
 Segue os promts com os resultados:
 
 Promt 1:
-Estou com um problema no meu codigo, quando eu coloco que quero memoria a mais em uma oferta, eu nao consigo tirar essa memoria extra da oferta depois, ou seja, eu nao consigo depois de colocar a memoria extra no array de computadores, eu nao consigo escolher a mesma oferta sem memoria extra
-
-Resultado 1:
-Drafting a per-purchase object creation approach to fix the leak.
-Boa observação — isso é um bug real de aliasing (referências compartilhadas), bem diferente dos anteriores. Deixa eu explicar a causa raiz.
-
-Por que isso acontece:
-
-computador1, computador2 e computador3 são criados uma única vez, lá no início do Main, e continuam sendo os mesmos objetos durante todo o programa. Toda vez que o cliente escolhe a "oferta 1", você está pegando essa mesma referência de computador1 de novo — não uma cópia nova.
-
-Então, se o cliente:
-
-Escolhe oferta 1 → adiciona memória extra → computador1.memoriaUSB fica preenchido.
-Escolhe oferta 1 de novo, dessa vez sem memória → cai no else, que nunca reseta memoriaUSB de volta pra null.
-Resultado: o mesmo objeto computador1 continua com a memória "grudada" — e pior, como o array computadoresAdquiridos guarda referências, não cópias, a 1ª compra (que está no array) também "sente" qualquer mudança feita depois no mesmo computador1. Ou seja, mesmo resetando no else, você corrigiria só sintomaticamente e ainda bagunçaria a 1ª compra que já estava no array.
-
-A causa de fundo: o programa trata as "ofertas" como se fossem produtos únicos e reaproveitáveis, mas na prática cada compra deveria gerar um computador independente — um novo objeto, não o mesmo reaproveitado.
-
-A correção certa: criar um Computador novo a cada vez que uma oferta é escolhida dentro do loop, em vez de reaproveitar computador1/computador2/computador3:
-
-
-Promt 2:
 Terminei o projeto assim. Pensando em programacao orientada a objeto e de acordo com o UML, de 0 a 10, qual nota voce daria ?
 
 Tracing the double-counting bug's effect on totals.
@@ -119,6 +102,28 @@ Só que esse método já soma o preço a cada chamada (this.totalCompra += pc.ge
 Divergência do método com o UML. O diagrama mostra calculaTotalCompra(): float, sem parâmetro. Seu método é CalculaTotalCompra(Computador pc) — com parâmetro e com letra maiúscula no início (convenção Java é camelCase, começando minúsculo). Funcionalmente resolve o problema, mas não é fiel à assinatura do diagrama.
 Tratamento de oferta inválida incompleto. Quando o usuário digita uma oferta fora de 1/2/3 (ex: 5), o código imprime "Oferta inválida!" mas não usa continue — então ele continua a execução e adiciona pcEscolhido (o valor antigo, ou null na primeira iteração) de novo no array, incrementando a contagem indevidamente.
 Print morto/contraditório. Dentro do bloco que só roda quando qtdComputadoresAdquiridos>=2, você tem System.out.println("Nenhuma oferta foi escolhida"); — mensagem que não faz sentido ali, já que nesse ponto pelo menos 2 ofertas foram escolhidas.
+
+
+Promt 2:
+Estou com um problema no meu codigo, quando eu coloco que quero memoria a mais em uma oferta, eu nao consigo tirar essa memoria extra da oferta depois, ou seja, eu nao consigo depois de colocar a memoria extra no array de computadores, eu nao consigo escolher a mesma oferta sem memoria extra
+
+Resultado 1:
+Drafting a per-purchase object creation approach to fix the leak.
+Boa observação — isso é um bug real de aliasing (referências compartilhadas), bem diferente dos anteriores. Deixa eu explicar a causa raiz.
+
+Por que isso acontece:
+
+computador1, computador2 e computador3 são criados uma única vez, lá no início do Main, e continuam sendo os mesmos objetos durante todo o programa. Toda vez que o cliente escolhe a "oferta 1", você está pegando essa mesma referência de computador1 de novo — não uma cópia nova.
+
+Então, se o cliente:
+
+Escolhe oferta 1 → adiciona memória extra → computador1.memoriaUSB fica preenchido.
+Escolhe oferta 1 de novo, dessa vez sem memória → cai no else, que nunca reseta memoriaUSB de volta pra null.
+Resultado: o mesmo objeto computador1 continua com a memória "grudada" — e pior, como o array computadoresAdquiridos guarda referências, não cópias, a 1ª compra (que está no array) também "sente" qualquer mudança feita depois no mesmo computador1. Ou seja, mesmo resetando no else, você corrigiria só sintomaticamente e ainda bagunçaria a 1ª compra que já estava no array.
+
+A causa de fundo: o programa trata as "ofertas" como se fossem produtos únicos e reaproveitáveis, mas na prática cada compra deveria gerar um computador independente — um novo objeto, não o mesmo reaproveitado.
+
+A correção certa: criar um Computador novo a cada vez que uma oferta é escolhida dentro do loop, em vez de reaproveitar computador1/computador2/computador3:
 
 
 Promt 3: 
@@ -150,4 +155,7 @@ if(qtdComputadoresAdquiridos>=2 ){
     ProcessarPedido.processarPedido(computadoresAdquiridos, qtdComputadoresAdquiridos); // <- move pra cá
 }
 Corrigindo isso, sobe fácil pra 9.5–10 — a modelagem OO e a fidelidade ao UML já estão excelentes.
+
+
+
 
