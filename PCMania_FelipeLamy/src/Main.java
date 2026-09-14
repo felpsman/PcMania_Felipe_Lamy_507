@@ -106,14 +106,14 @@ public  class Main {
 
             if(oferta==1 && escolhaMemoria==1){
                 pcEscolhido.addMemoriaUSB(new MemoriaUSB("Pen Drive",16));
-                System.out.println("Oferta " + oferta + " com memoria extra de "+  pcEscolhido.getMemoriaUSB().getNome()+" "+ pcEscolhido.getMemoriaUSB().getCapacidade()+ " GB" + " adicionada à compra de " + cliente.getNome() + ".");
+                System.out.println("Oferta " + oferta + " com memoria extra de "+  pcEscolhido.getMemoriaUSB().getNome()+" "+ pcEscolhido.getMemoriaUSB().getCapacidade()+ " GB" + " adicionada a compra de " + cliente.getNome() + ".");
             } else if (oferta ==2 && escolhaMemoria==1) {
                 pcEscolhido.addMemoriaUSB(new MemoriaUSB("Pen Drive",32));
-                System.out.println("Oferta " + oferta + " com memoria extra de "+ pcEscolhido.getMemoriaUSB().getNome()+ " " + pcEscolhido.getMemoriaUSB().getCapacidade()+" GB" + " adicionada à compra de " + cliente.getNome() + ".");
+                System.out.println("Oferta " + oferta + " com memoria extra de "+ pcEscolhido.getMemoriaUSB().getNome()+ " " + pcEscolhido.getMemoriaUSB().getCapacidade()+" GB" + " adicionada a compra de " + cliente.getNome() + ".");
             }
             else if (oferta==3 && escolhaMemoria==1) {
                 pcEscolhido.addMemoriaUSB(new MemoriaUSB("HD Externo",1));
-                System.out.println("Oferta " + oferta + " com memoria extra de "+ pcEscolhido.getMemoriaUSB().getNome()+" "+ pcEscolhido.getMemoriaUSB().getCapacidade()+ " TB" + " adicionada à compra de " + cliente.getNome() + ".");
+                System.out.println("Oferta " + oferta + " com memoria extra de "+ pcEscolhido.getMemoriaUSB().getNome()+" "+ pcEscolhido.getMemoriaUSB().getCapacidade()+ " TB" + " adicionada a compra de " + cliente.getNome() + ".");
             }
             else {
                 System.out.println("Voce escolheu nao manter a memoria extra!");
